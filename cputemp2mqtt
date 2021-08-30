@@ -1,12 +1,15 @@
 #!/bin/sh
 
-USAGE="
-Usage: $0 [-v] {[-f config_file] | SAMPLING_PERIOD REPORT_PERIOD params_for_mosquitto_pub}
-SAMPLING_PERIOD: how often (in seconds) should CPU temperature be read
-REPORT_PERIOD: report average temperature every n-th sample
+USAGE="Usage: $0 [-v] {-f config_file |
+                            {SAMPLING_PERIOD REPORT_PERIOD
+                             [args_for_mosquitto_pub]}
+                           }
+
 -v : verbose mode -- echo debug messages to stderr
 -f config_file : read configuration from file
-params_for_mosquitto_pub (examples):
+SAMPLING_PERIOD : how often (in seconds) should CPU temperature be read
+REPORT_PERIOD : report average temperature every n-th sample
+args_for_mosquitto_pub (examples):
     -h hostname
     -p port-number
     -t message-topic
