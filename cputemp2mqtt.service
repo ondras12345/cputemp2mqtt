@@ -1,0 +1,13 @@
+[Unit]
+Description=Periodically report CPU temperature average to MQTT
+After=mosquitto.service
+
+[Service]
+User=homeassistant
+ExecStart=/usr/local/bin/cputemp2mqtt -f /etc/cputemp2mqtt
+Restart=on-failure
+RestartPreventExitStatus=255
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
