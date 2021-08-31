@@ -20,55 +20,13 @@ args_for_mosquitto_pub (examples):
     process name. Use ~/.config/mosquitto_pub instead.
 "
 
-if [ "$1" = "-h" ] || [ "$1" = "--help" ] ; then
-    echo "$USAGE"
-    exit 0
-fi
-
-DEBUG=false
-if [ "$1" = "-v" ] ; then
-    DEBUG=true
-    echo "Verbose mode is on" >&2
-    shift
-fi
-
-CONFIG_FROM_FILE=false
-if [ "$1" = "-f" ] ; then
-    shift
-    CONFIG_FILE="$1"
-    shift
-    if [ ! -f "$CONFIG_FILE" ] ; then
-        echo "Config file $CONFIG_FILE does not exist" >&2
-        exit 255
-    fi
+print_debug()
+{
     if [ "$DEBUG" = true ] ; then
-        echo "Reading configuration from $CONFIG_FILE" >&2
+        echo "$@" >&2
     fi
-    # shellcheck source=etc/cputemp2mqtt
-    . "$CONFIG_FILE"
-    CONFIG_FROM_FILE=true
-fi
+}
 
-if [ "$CONFIG_FROM_FILE" = false ] ; then
-    if [ "$#" -lt 2 ] ; then
-        echo "Too little arguments" >&2
-        echo "$USAGE" >&2
-        exit 255
-    fi
-
-    SAMPLING_PERIOD="$1"
-    shift
-    REPORT_PERIOD="$1"
-    shift
-
-    MOSQUITTO_PARAMS="$*"
-fi
-
-if [ "$DEBUG" = true ] ; then
-    echo "SAMPLING_PERIOD: $SAMPLING_PERIOD" >&2
-    echo "REPORT_PERIOD: $REPORT_PERIOD" >&2
-    echo "MOSQUITTO_PARAMS: $MOSQUITTO_PARAMS" >&2
-fi
 
 sample_and_report()
 {
@@ -93,9 +51,7 @@ sample_and_report()
         # compute average
         samples="$samples $temperature"
         sample_count=$((sample_count+1))
-        if [ "$DEBUG" = true ] ; then
-            echo "New sample: $((temperature/10))'C; array: $samples" >&2
-        fi
+        print_debug "New sample: $((temperature/10))'C; array: $samples"
         if [ "$sample_count" -eq "$REPORT_PERIOD" ] ; then
             average=0
             for sample in $samples ; do
@@ -104,15 +60,60 @@ sample_and_report()
             average=$((average/sample_count))
             average_string="$((average/10)).$((average%10))"
             echo "$average_string"
-            if [ "$DEBUG" = true ] ; then
-                echo "New average: $average_string" >&2
-            fi
+            print_debug "New average: $average_string"
             samples=""
             sample_count=0
         fi
         sleep "$SAMPLING_PERIOD"
     done
 }
+
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ] ; then
+    echo "$USAGE"
+    exit 0
+fi
+
+DEBUG=false
+if [ "$1" = "-v" ] ; then
+    DEBUG=true
+    print_debug "Verbose mode is on"
+    shift
+fi
+
+CONFIG_FROM_FILE=false
+if [ "$1" = "-f" ] ; then
+    shift
+    CONFIG_FILE="$1"
+    shift
+    if [ ! -f "$CONFIG_FILE" ] ; then
+        echo "Config file $CONFIG_FILE does not exist" >&2
+        exit 255
+    fi
+    print_debug "Reading configuration from $CONFIG_FILE"
+    # shellcheck source=cputemp2mqtt.conf
+    . "$CONFIG_FILE"
+    CONFIG_FROM_FILE=true
+fi
+
+if [ "$CONFIG_FROM_FILE" = false ] ; then
+    if [ "$#" -lt 2 ] ; then
+        echo "Too little arguments" >&2
+        echo "$USAGE" >&2
+        exit 255
+    fi
+
+    SAMPLING_PERIOD="$1"
+    shift
+    REPORT_PERIOD="$1"
+    shift
+
+    MOSQUITTO_PARAMS="$*"
+fi
+
+print_debug "SAMPLING_PERIOD: $SAMPLING_PERIOD"
+print_debug "REPORT_PERIOD: $REPORT_PERIOD"
+print_debug "MOSQUITTO_PARAMS: $MOSQUITTO_PARAMS"
 
 trap 'trap - EXIT; exit 0' TERM INT HUP
 trap 'trap - EXIT; exit 255' EXIT
