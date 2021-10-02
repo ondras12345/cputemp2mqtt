@@ -67,11 +67,12 @@ sample multiplied by 10 is stored. This could use some improvement...
 ```sh
 # install the script, it's config file and systemd unit file
 sudo make install
+
+# edit /etc/cputemp2mqtt
+# edit /etc/systemd/system/cputemp2mqtt.service
+
 # reload systemd units
 sudo systemctl daemon-reload
-
-# Edit /etc/cputemp2mqtt
-# Edit /etc/systemd/system/cputemp2mqtt.service
 
 # enable and start the systemd service
 sudo systemctl enable --now cputemp2mqtt.service
