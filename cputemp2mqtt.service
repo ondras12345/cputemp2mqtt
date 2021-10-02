@@ -3,6 +3,8 @@ Description=Periodically report CPU temperature average to MQTT
 After=mosquitto.service
 
 [Service]
+# User that cputemp2mqtt should be run as. You can create one like this:
+# useradd -rm homeassistant
 User=homeassistant
 ExecStart=/usr/local/bin/cputemp2mqtt -f /etc/cputemp2mqtt
 Restart=on-failure

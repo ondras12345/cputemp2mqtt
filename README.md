@@ -71,6 +71,7 @@ sudo make install
 sudo systemctl daemon-reload
 
 # Edit /etc/cputemp2mqtt
+# Edit /etc/systemd/system/cputemp2mqtt.service
 
 # enable and start the systemd service
 sudo systemctl enable --now cputemp2mqtt.service
